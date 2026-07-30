@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenGS Map Tool</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-display: 'VT323', 'Courier New', monospace;
+            --font-body:    'Space Mono', 'Courier New', monospace;
+            --bg:            #1e1e1e;
+            --surface:       #252526;
+            --surface-alt:   #2a2a2b;
+            --code-bg:       #2d2d2d;
+            --text:          #d4d4d4;
+            --text-heading:  #ffffff;
+            --text-muted:    #9d9d9d;
+            --accent:        #f09040;
+            --accent-light:  #f5a623;
+            --accent-dark:   #cc7722;
+            --border:        #3e3e42;
+            --border-table:  #f09040;
+            --radius:        8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        a { color: var(--accent-light); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            border-bottom: 1px solid var(--border);
+        }
+        header h1 {
+            font-family: var(--font-display);
+            font-size: 56px;
+            color: var(--text-heading);
+            letter-spacing: 2px;
+        }
+        header .tagline {
+            color: var(--text-muted);
+            font-size: 16px;
+            margin-top: 8px;
+        }
+        header .badges {
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        header .badges img { height: 20px; }
+
+        /* Nav */
+        nav {
+            position: sticky;
+            top: 0;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            padding: 12px 20px;
+            z-index: 10;
+            flex-wrap: wrap;
+        }
+        nav a {
+            color: var(--text);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        nav a:hover { color: var(--accent); text-decoration: none; }
+
+        /* Sections */
+        section {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 48px 20px;
+        }
+        section h2 {
+            font-family: var(--font-display);
+            font-size: 36px;
+            color: var(--text-heading);
+            margin-bottom: 24px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--accent);
+            display: inline-block;
+        }
+        section h3 {
+            color: var(--text-heading);
+            margin: 24px 0 12px;
+            font-size: 16px;
+        }
+        section p, section li { margin-bottom: 10px; }
+        section ul { padding-left: 24px; }
+
+        /* Code blocks */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 16px 0;
+        }
+        code { font-family: var(--font-body); background: var(--code-bg); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+        pre code { background: none; padding: 0; }
+
+        /* Feature grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 24px;
+        }
+        .feature-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+        }
+        .feature-card h4 {
+            color: var(--accent);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        /* Screenshots */
+        .screenshots {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 24px;
+        }
+        .screenshots img {
+            width: 100%;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        .screenshots figcaption {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 13px;
+        }
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            color: var(--accent);
+            border-bottom: 2px solid var(--border-table);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        tr:hover { background: var(--surface-alt); }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+        footer a { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>OpenGS Map Tool</h1>
+    <p class="tagline">Generate province and territory maps for grand strategy games from real-world boundary data</p>
+    <div class="badges">
+        <img src="https://img.shields.io/badge/Debian-13%20(trixie)-A81D33?style=flat-square&logo=debian" alt="Debian 13">
+        <img src="https://img.shields.io/badge/Python-3.13-3776AB?style=flat-square&logo=python" alt="Python 3.13">
+        <img src="https://img.shields.io/badge/License-GPL--3.0--or--later-blue?style=flat-square" alt="GPL 3.0">
+        <img src="https://img.shields.io/badge/Discord-OpenGS-5865F2?style=flat-square&logo=discord" alt="Discord">
+    </div>
+</header>
+
+<nav>
+    <a href="#install">Install</a>
+    <a href="#features">Features</a>
+    <a href="#screenshots">Screenshots</a>
+    <a href="#usage">Usage</a>
+    <a href="#data">Data Sources</a>
+    <a href="#links">Links</a>
+</nav>
+
+<section id="install">
+    <h2>Install</h2>
+
+    <h3>Debian 13 (trixie) / Linux</h3>
+    <pre><code># System dependencies
+sudo apt install python3-pyqt6 python3-numpy python3-pillow \
+    python3-scipy python3-tk python3-venv gdal-bin
+
+# Clone and setup
+git clone https://github.com/cpntodd/opengs-maptool.git
+cd opengs-maptool
+python3 -m venv --system-site-packages .venv
+.venv/bin/pip install tkinterdnd2 cartopy
+
+# Run
+.venv/bin/python3 main.py</code></pre>
+
+    <h3>Windows</h3>
+    <p>Download the latest release from <a href="https://github.com/cpntodd/opengs-maptool/releases">GitHub Releases</a>, unpack, and run the executable.</p>
+
+    <h3>Manual (pip)</h3>
+    <pre><code>git clone https://github.com/cpntodd/opengs-maptool.git
+cd opengs-maptool
+pip install -r requirements.txt
+pip install cartopy
+python main.py</code></pre>
+</section>
+
+<section id="features">
+    <h2>Features</h2>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h4>Map Import</h4>
+            <p>Load real-world administrative boundaries from GeoJSON or MapInfo TAB files. Auto-generate land/sea raster images from Natural Earth coastline data. Supports multi-file loading with automatic clipping to land.</p>
+        </div>
+        <div class="feature-card">
+            <h4>Territory Generation</h4>
+            <p>Generate territory maps from land and boundary images. Control land and ocean territory counts independently with density sliders.</p>
+        </div>
+        <div class="feature-card">
+            <h4>Province Generation</h4>
+            <p>Subdivide territories into provinces using Voronoi tessellation with Lloyd relaxation for natural-looking regions.</p>
+        </div>
+        <div class="feature-card">
+            <h4>Density Control</h4>
+            <p>Import density images to control province/territory distribution. Darker areas attract more seeds for denser regions.</p>
+        </div>
+        <div class="feature-card">
+            <h4>Jagged Borders</h4>
+            <p>Optional natural-looking irregular borders using spatially-correlated noise instead of straight Voronoi edges.</p>
+        </div>
+        <div class="feature-card">
+            <h4>Terrain System</h4>
+            <p>Import a terrain image to assign terrain types (forest, desert, mountain, etc.) to provinces based on their center-point location.</p>
+        </div>
+        <div class="feature-card">
+            <h4>Lake Support</h4>
+            <p>Lakes are automatically detected and become individual provinces, assigned to the overlapping territory.</p>
+        </div>
+        <div class="feature-card">
+            <h4>Export</h4>
+            <p>Export territory and province maps as PNG images, plus JSON definitions with IDs, RGB colors, types, coordinates, and terrain data.</p>
+        </div>
+    </div>
+</section>
+
+<section id="screenshots">
+    <h2>Screenshots</h2>
+    <div class="screenshots">
+        <figure>
+            <img src="renders/Australia_preview.png" alt="Australia with LGA boundaries">
+            <figcaption>Australia with LGA boundaries overlaid on Natural Earth coastline</figcaption>
+        </figure>
+        <figure>
+            <img src="renders/Australia_boundary.png" alt="Australia boundary image">
+            <figcaption>Boundary image -- black borders on white, ready for the Boundary tab</figcaption>
+        </figure>
+        <figure>
+            <img src="renders/Australia_land.png" alt="Australia land/sea image">
+            <figcaption>Land/sea image -- ocean (5,20,18), land (white), lakes (0,255,0)</figcaption>
+        </figure>
+    </div>
+</section>
+
+<section id="usage">
+    <h2>Usage</h2>
+
+    <h3>Map Import Tab</h3>
+    <p>The quickest way to create a map from real-world data:</p>
+    <ol>
+        <li>Click <strong>Load Boundaries...</strong> and select one or more <code>.tab</code> or <code>.geojson</code> files</li>
+        <li>Boundaries are auto-converted (TAB via GDAL) and auto-rasterized</li>
+        <li>Click <strong>Generate Land Image</strong> to create a coastline-based land/sea raster</li>
+        <li>Click <strong>Send to Boundary Tab</strong> to push the rasterized boundary to the pipeline</li>
+        <li>Use <strong>Add Boundaries...</strong> to append additional files to the current set</li>
+        <li>Enable <strong>Clip to Land</strong> to prevent boundaries from extending into the ocean</li>
+    </ol>
+
+    <h3>Full Pipeline</h3>
+    <ol>
+        <li><strong>Map Import</strong> or <strong>Land Image</strong> tab -- provide a land/sea raster (ocean = RGB 5,20,18)</li>
+        <li><strong>Boundary Image</strong> tab -- provide administrative borders (black = RGB 0,0,0)</li>
+        <li><strong>Density Image</strong> tab -- optional density map for province distribution control</li>
+        <li><strong>Terrain Image</strong> tab -- optional terrain type assignment</li>
+        <li><strong>Territory Image</strong> tab -- generate territories, adjust sliders, export</li>
+        <li><strong>Province Image</strong> tab -- generate provinces from territories, export</li>
+    </ol>
+</section>
+
+<section id="data">
+    <h2>Data Sources</h2>
+    <p>Government open-data portals worldwide publish administrative boundaries as free downloads:</p>
+    <table>
+        <thead>
+            <tr><th>Country</th><th>Portal</th><th>Formats</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>USA</td><td><a href="https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html">census.gov</a></td><td>SHP, GeoJSON</td></tr>
+            <tr><td>UK</td><td><a href="https://geoportal.statistics.gov.uk">ONS Open Geography</a></td><td>SHP, GeoJSON, KML</td></tr>
+            <tr><td>Canada</td><td><a href="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/index2021-eng.cfm">Statistics Canada</a></td><td>SHP, GeoJSON, TAB</td></tr>
+            <tr><td>Australia</td><td><a href="https://data.gov.au">data.gov.au</a></td><td>SHP, TAB, GeoJSON</td></tr>
+            <tr><td>New Zealand</td><td><a href="https://datafinder.stats.govt.nz">Stats NZ</a></td><td>SHP, GeoJSON</td></tr>
+            <tr><td>EU (all members)</td><td><a href="https://ec.europa.eu/eurostat/web/gisco/geodata">Eurostat GISCO</a></td><td>SHP, GeoJSON</td></tr>
+            <tr><td>Germany</td><td><a href="https://gdz.bkg.bund.de">BKG</a></td><td>SHP</td></tr>
+            <tr><td>France</td><td><a href="https://www.data.gouv.fr">data.gouv.fr</a></td><td>SHP, GeoJSON</td></tr>
+            <tr><td>Japan</td><td><a href="https://nlftp.mlit.go.jp/ksj/">NLNI</a></td><td>SHP</td></tr>
+            <tr><td>Brazil</td><td><a href="https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais">IBGE</a></td><td>SHP</td></tr>
+            <tr><td>Global</td><td><a href="https://gadm.org">GADM</a></td><td>GeoJSON, SHP, KMZ</td></tr>
+            <tr><td>Global</td><td><a href="https://www.naturalearthdata.com">Natural Earth</a></td><td>SHP</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<section id="links">
+    <h2>Links</h2>
+    <ul>
+        <li><a href="https://github.com/cpntodd/opengs-maptool">GitHub Repository</a></li>
+        <li><a href="https://github.com/cpntodd/opengs-maptool/releases">Releases</a></li>
+        <li><a href="https://discord.gg/6pRc9f6g6S">OpenGS Discord Server</a></li>
+    </ul>
+</section>
+
+<footer>
+    (c) 2026 <a href="https://github.com/cpntodd">cpntodd</a> -- Licensed under GPL-3.0-or-later
+</footer>
+
+</body>
+</html>

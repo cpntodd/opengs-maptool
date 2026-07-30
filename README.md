@@ -90,6 +90,8 @@ The Map Import tab lets you import real-world GIS boundary data and generate mat
 
 **Auto-export:** Rendered boundary and land images are automatically saved to the `renders/` folder with the detected region name (e.g., `renders/Australia_boundary.png`).
 
+![Australia Preview](renders/Australia_preview.png)
+
 ### Land Image
 The Land Image tab takes an image that specifies the ocean and lake areas of the map.
 - **Ocean** must be RGB color (5, 20, 18)
@@ -168,17 +170,30 @@ Territory history files (defining the belonging provinces per territory) can be 
 
 ## Using Real-World Boundaries
 
-The Map Import tab supports importing administrative boundary data from sources like [data.gov.au](https://data.gov.au). Australian Local Government Area (LGA) boundaries are available as free downloads:
+The Map Import tab supports importing administrative boundary data from government open-data portals worldwide. Most countries publish their sub-national boundaries as free downloads in SHP, TAB, or GeoJSON format.
 
-- [WA Local Government Areas](https://data.gov.au/data/dataset/wa-local-government-areas-geoscape-administrative-boundaries)
-- [National Geoscape Administrative Boundaries](https://data.gov.au/data/dataset/geoscape-administrative-boundaries)
+| Country | Portal | Formats |
+|---------|--------|---------|
+| **USA** | [census.gov](https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html) | SHP, GeoJSON |
+| **UK** | [ONS Open Geography](https://geoportal.statistics.gov.uk) | SHP, GeoJSON, KML |
+| **Canada** | [Statistics Canada](https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/index2021-eng.cfm) | SHP, GeoJSON, TAB |
+| **Australia** | [data.gov.au](https://data.gov.au) | SHP, TAB, GeoJSON |
+| **New Zealand** | [Stats NZ](https://datafinder.stats.govt.nz) | SHP, GeoJSON |
+| **EU (all members)** | [Eurostat GISCO](https://ec.europa.eu/eurostat/web/gisco/geodata) | SHP, GeoJSON |
+| **Germany** | [BKG](https://gdz.bkg.bund.de) | SHP |
+| **France** | [data.gouv.fr](https://www.data.gouv.fr) | SHP, GeoJSON |
+| **Japan** | [NLNI](https://nlftp.mlit.go.jp/ksj/) | SHP |
+| **Brazil** | [IBGE](https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais) | SHP |
+| **Global** | [GADM](https://gadm.org) (all countries) | GeoJSON, SHP, KMZ |
+| **Global** | [Natural Earth](https://www.naturalearthdata.com) (admin 0 & 1) | SHP |
 
-Download the TAB or SHP format files, then load them in the Map Import tab. The tool will:
-1. Convert to GeoJSON
+Download any SHP or TAB file, load it in the Map Import tab, and the tool will:
+1. Convert to GeoJSON (TAB files via GDAL)
 2. Compute the geographic bounding box
 3. Rasterize boundaries at your chosen resolution
 4. Generate a matching land/sea image from Natural Earth coastline data
-5. Auto-save everything to the `renders/` folder
+5. Mask the land image to show only your target country
+6. Auto-save everything to the `renders/` folder
 
 ---
 
