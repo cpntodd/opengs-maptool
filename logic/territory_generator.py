@@ -1,5 +1,6 @@
 import config
 import numpy as np
+from joblib import Parallel, delayed
 from logic.numb_gen import NumberSeries
 from logic.utils import (
     clear_used_colors, extract_masks, create_region_map, combine_maps,
@@ -33,32 +34,41 @@ def generate_territory_map(main_layout):
     sea_points = main_layout.territory_ocean_slider.value()
     has_sea = sea_points > 0 and land_image is not None
 
-    sea_step_budget = STEPS_PER_REGION_MAP if has_sea else 2
-    total_steps = 2 + STEPS_PER_REGION_MAP + sea_step_budget + 2
+    # Total steps: setup(2) + land(STEP) + sea(STEP or 2) + combine(2)
+    total_steps = 2 + STEPS_PER_REGION_MAP + (STEPS_PER_REGION_MAP if has_sea else 2) + 2
     step = make_progress_updater(main_layout, total_steps)
     step(2)  # setup complete
 
-    land_map, land_meta, next_index = create_region_map(
+    # Build task list for parallel execution
+    tasks = [delayed(create_region_map)(
         masks["land_fill"], masks["land_border"], land_points, 0,
-        "land", series, "territory_id", "territory_type", step_fn=step,
+        "land", series, "territory_id", "territory_type",
         density=density_arr, density_strength=density_strength,
         jagged=jagged_land
-    )
+    )]
 
     sea_density = None if exclude_ocean_density else density_arr
     sea_density_strength = 1.0 if exclude_ocean_density else density_strength
 
     if has_sea:
-        sea_map, sea_meta, _ = create_region_map(
-            masks["sea_fill"], masks["sea_border"], sea_points, next_index,
-            "ocean", series, "territory_id", "territory_type", step_fn=step,
+        tasks.append(delayed(create_region_map)(
+            masks["sea_fill"], masks["sea_border"], sea_points, land_points,
+            "ocean", series, "territory_id", "territory_type",
             density=sea_density, density_strength=sea_density_strength,
             jagged=jagged_ocean
-        )
+        ))
+
+    # Execute land and sea generation in parallel
+    if len(tasks) == 2:
+        results = Parallel(n_jobs=2, prefer="threads")(tasks)
+        (land_map, land_meta, _), (sea_map, sea_meta, _) = results
+        step(STEPS_PER_REGION_MAP)  # combined progress for both
     else:
+        results = Parallel(n_jobs=1, prefer="threads")(tasks)
+        (land_map, land_meta, _) = results[0]
         sea_map = np.full((masks["map_h"], masks["map_w"]), -1, np.int32)
         sea_meta = []
-        step(2)
+        step(STEPS_PER_REGION_MAP)
 
     metadata = land_meta + sea_meta
 

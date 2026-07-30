@@ -1,4 +1,6 @@
 import config
+import threading
+
 import numpy as np
 from PIL import Image
 from scipy.spatial import cKDTree
@@ -11,10 +13,12 @@ MAX_LLOYD_SAMPLE = 100_000
 STEPS_PER_REGION_MAP = 1 + config.LLOYD_ITERATIONS + 1 + 1
 
 used_colors = set()
+_used_colors_lock = threading.Lock()
 
 
 def clear_used_colors():
-    used_colors.clear()
+    with _used_colors_lock:
+        used_colors.clear()
 
 
 def color_from_id(index, ptype):
@@ -32,9 +36,10 @@ def color_from_id(index, ptype):
             r, g, b = map(int, rng.integers(0, 256, 3))
 
         color = (int(r), int(g), int(b))
-        if color not in used_colors:
-            used_colors.add(color)
-            return color
+        with _used_colors_lock:
+            if color not in used_colors:
+                used_colors.add(color)
+                return color
 
 
 def random_seeds(mask, num_points, rng_seed=None, density=None,
