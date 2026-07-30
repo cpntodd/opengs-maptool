@@ -83,7 +83,7 @@ def generate_province_map(main_layout):
     # Build territory lookup by _pmap_index
     terr_by_index = {d["_pmap_index"]: d for d in territory_data}
 
-    # Create lake provinces globally — each connected lake is one province,
+    # Create lake provinces globally -- each connected lake is one province,
     # assigned to the territory that contains its center
     if lake_mask is not None and lake_mask.any():
         labeled, num_lakes = ndlabel(lake_mask)
@@ -158,6 +158,16 @@ def generate_province_map(main_layout):
         step(1)
 
     # Build province image via color lookup
+    out = np.zeros((map_h, map_w, 3), np.uint8)
+    if all_metadata and start_index > 0:
+        color_lut = np.zeros((start_index, 3), np.uint8)
+        for d in all_metadata:
+            idx = d["_pmap_index"]
+            color_lut[idx] = (d["R"], d["G"], d["B"])
+        valid = province_pmap >= 0
+        out[valid] = color_lut[province_pmap[valid]]
+    province_image = Image.fromarray(out)
+    step(1)
     out = np.zeros((map_h, map_w, 3), np.uint8)
     if all_metadata and start_index > 0:
         color_lut = np.zeros((start_index, 3), np.uint8)
