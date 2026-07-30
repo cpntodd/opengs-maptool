@@ -5,3 +5,8 @@ PyQt6-Qt6==6.10.0
 PyQt6_sip==13.10.2
 scipy==1.16.3
 tkinterdnd2==0.4.3
+# Map Import tab dependencies (system + pip)
+# gdal-bin (system: apt install gdal-bin) -- for TAB -> GeoJSON conversion
+# cartopy -- natural earth land/sea polygons
+# shapely -- geometry clipping & simplification
+

@@ -9,6 +9,7 @@ from logic.export_module import (export_image, export_territory_definitions,
                                  export_province_definitions)
 from ui.buttons import create_slider, create_button, create_checkbox
 from ui.image_display import ImageDisplay
+from ui.map_import_tab import MapImportTab
 
 
 class MainWindow(QWidget):
@@ -35,6 +36,10 @@ class MainWindow(QWidget):
 
         self.label_version = QLabel("Version "+config.VERSION)
         main_layout.addWidget(self.label_version)
+
+        # TAB0 MAP IMPORT
+        self.map_import_tab = MapImportTab(self)
+        self.tabs.addTab(self.map_import_tab, "Map Import")
 
         # TAB1 LAND IMAGE
         self.land_tab = QWidget()
