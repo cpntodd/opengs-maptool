@@ -412,7 +412,8 @@ class MapImportTab(QWidget):
         self._btn_add.setEnabled(False)
 
     def _on_generate_land(self):
-        """Generate a land/sea image from coastline data."""
+        """Generate a land/sea image from coastline data, masked to the
+        boundary region so only the target country's landmass is kept."""
         if not self._combined_features or self._bbox is None:
             return
 
@@ -436,6 +437,9 @@ class MapImportTab(QWidget):
             )
             return
 
+        # Mask: remove land outside the boundary region (neighbouring countries)
+        land_img = self._mask_land_to_boundaries(land_img)
+
         # Set on the Land Image tab
         self._main.land_image_display.set_image(land_img)
         self._main.check_territory_ready()
@@ -455,6 +459,74 @@ class MapImportTab(QWidget):
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
+
+    def _mask_land_to_boundaries(self, land_img):
+        """Mask the land image so only the target country's landmass is kept.
+
+        Builds a mask from the union of all loaded boundary polygons
+        (buffered outward slightly to capture the coastline), then converts
+        any land pixels outside that mask back to ocean.  This prevents
+        neighbouring countries (e.g. Indonesia, PNG) from appearing in
+        the land image.
+        """
+        from shapely.geometry import Polygon, MultiPolygon, shape
+        from shapely.ops import unary_union
+
+        # Build union of all boundary polygon geometries
+        polys = []
+        for feat in self._combined_features:
+            geom = feat.get("geometry")
+            if geom is None:
+                continue
+            try:
+                polys.append(shape(geom))
+            except Exception:
+                continue
+        if not polys:
+            return land_img
+
+        boundary_union = unary_union(polys)
+        if boundary_union.is_empty:
+            return land_img
+
+        # Buffer outward by ~0.1 degrees to capture coastline gaps
+        buffered = boundary_union.buffer(0.1)
+
+        # Clip to the image's geographic bbox
+        from shapely.geometry import box
+        min_lon, min_lat, max_lon, max_lat = self._bbox
+        clip = box(min_lon, min_lat, max_lon, max_lat)
+        mask_geom = buffered.intersection(clip)
+        if mask_geom.is_empty:
+            return land_img
+
+        # Rasterize the mask: white inside, black outside
+        import numpy as np
+        from PIL import Image, ImageDraw
+        mask_img = Image.new("L", land_img.size, 0)
+        draw = ImageDraw.Draw(mask_img)
+
+        polys_to_draw = (
+            mask_geom.geoms if mask_geom.geom_type == "MultiPolygon"
+            else [mask_geom]
+        )
+        for poly in polys_to_draw:
+            if poly.geom_type != "Polygon" or poly.exterior is None:
+                continue
+            pixels = [
+                _lonlat_to_pixel(x, y, self._bbox, land_img.width, land_img.height)
+                for x, y in poly.exterior.coords
+            ]
+            if len(pixels) >= 3:
+                draw.polygon(pixels, fill=255)
+
+        # Apply mask: where mask is black -> ocean
+        mask_arr = np.array(mask_img)
+        land_arr = np.array(land_img)
+        ocean_color = np.array([5, 20, 18, 255], dtype=np.uint8)
+        land_arr[mask_arr == 0] = ocean_color
+
+        return Image.fromarray(land_arr, "RGBA")
 
     def _get_land_polygon(self):
         """Return a shapely Polygon/MultiPolygon of land for the current bbox.
